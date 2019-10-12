@@ -5,11 +5,17 @@
 from pathlib import Path
 import fileinput
 
-filcount = 0
-banktotchkacc = banktotsavacc = banktotchkamt = banktotsavamt = bankhibal = banklowbal = 0
-bankcusthibal = bankcustlowbal = ""
+filcount = banktotchkacc = banktotsavacc = banktotchkamt = banktotsavamt = bankhibal = banklowbal = 0
+filhibal = fillowbal = filsumchk = filsumsav = filnumchkacc = filnumsavacc = filnumrecs = 0
+bankcusthibal = bankcustlowbal = filcusthibal = filcustlowbal = ""
+
 path = Path("c:\pyproj\ABC_Bank\data")
 mergedfil = "c:\\pyproj\\ABC_Bank\\data\\append.txt"
+
+
+def drawline():
+    print()
+    print("-" * 45)
 
 
 def write_to_file(infil, inrec):
@@ -19,6 +25,8 @@ def write_to_file(infil, inrec):
 
 
 def process_file(fil):
+
+# process the provided input file to identify all relevent data points and return to caller
 
     custhibal = custlowbal = ""
     lowbal = 999999999999
@@ -58,10 +66,6 @@ def process_file(fil):
     return custhibal, hibal, custlowbal, lowbal, sumchk, sumsav, numchkacc, numsavacc, numrecs
 
 
-def drawline():
-    print()
-    print("-" * 45)
-
 
 ### Main program
 
@@ -69,32 +73,34 @@ for fhandle in path.glob("*.csv"):          # loop over the input files
 
     fret = process_file(fhandle)
 
-    banktotchkacc += fret[6]                # total checking/savings in bank along with amounts
-    banktotsavacc += fret[7]
-    banktotchkamt += fret[4]
-    banktotsavamt += fret[5]
+    filcusthibal, filhibal, filcustlowbal, fillowbal, filsumchk, filsumsav, filnumchkacc, filnumsavacc, filnumrecs  = fret     # return values from each file
 
-    if filcount == 0:                      # customer with highest / lowest balance in bank
-        bankcusthibal = fret[0]
-        bankhibal = fret[1]
-        bankcustlowbal = fret[2]
-        banklowbal = fret[3]
+    banktotchkacc += filnumchkacc               # total checking/savings in bank along with amounts
+    banktotsavacc += filnumsavacc
+    banktotchkamt += filsumchk
+    banktotsavamt += filsumsav
+
+    if filcount == 0:
+        bankcusthibal = filcusthibal
+        bankhibal = filhibal
+        bankcustlowbal = filcustlowbal
+        banklowbal = fillowbal
     else:
-        if fret[1] > bankhibal:
-            bankcusthibal = fret[0]
-            bankhibal = fret[1]
-        if fret[3] < banklowbal:
-            bankcustlowbal = fret[2]
-            banklowbal = fret[3]
+        if filhibal > bankhibal:
+            bankcusthibal = filcusthibal
+            bankhibal = filhibal
+        if fillowbal < banklowbal:
+            bankcustlowbal = filcustlowbal
+            banklowbal = fillowbal
 
 
     drawline()
 
     print("File: " + str(filcount + 1) + "\n")
     print(fhandle)
-    print("Data records: " + str(fret[8]))
-    print("Max balance: " + fret[0] + ", $" + str(fret[1]))
-    print("Min balance: " + fret[2] + ", $" + str(fret[3]))
+    print("Data records: " + str(filnumrecs))
+    print("Max balance: " + filcusthibal + ", $" + str(filhibal))
+    print("Min balance: " + filcustlowbal + ", $" + str(fillowbal))
 
     filcount += 1
 
